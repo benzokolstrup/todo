@@ -1,126 +1,193 @@
-import { createStore } from 'vuex'
+import { createStore } from "vuex";
 export default createStore({
   state: {
-    todoData: {}
+    todoData: {},
   },
   mutations: {
     updateTodoData(state, newData) {
-      state.todoData = newData
-    }
+      state.todoData = newData;
+    },
   },
   actions: {
     generateId() {
-      return Math.random().toString(36).substring(2, 12)
+      return Math.random().toString(36).substring(2, 12);
     },
     getCurrentDateTime() {
-      const now = new Date()
-      const day = String(now.getDate()).padStart(2, '0')
-      const month = String(now.getMonth() + 1).padStart(2, '0')
-      const year = now.getFullYear()
-      const hours = String(now.getHours()).padStart(2, '0')
-      const minutes = String(now.getMinutes()).padStart(2, '0')
-      const seconds = String(now.getSeconds()).padStart(2, '0')
-      return `${day}/${month}-${year} ${hours}:${minutes}:${seconds}`
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, "0");
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const year = now.getFullYear();
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+      return `${day}/${month}-${year} ${hours}:${minutes}:${seconds}`;
     },
     initializeStoreFromLocalStorage({ commit }) {
-      const currentData = JSON.parse(localStorage.getItem('todo-data')) || { lists: [] }
-      commit('updateTodoData', currentData)
+      const currentData = JSON.parse(localStorage.getItem("todo-data")) || {
+        lists: [],
+      };
+      commit("updateTodoData", currentData);
     },
     createTask({ dispatch, commit }, { taskTitle, listId }) {
-      let currentData = JSON.parse(localStorage.getItem('todo-data')) || { lists: [] }
-      const listIndex = currentData.lists.findIndex(list => list.id === listId)
+      let currentData = JSON.parse(localStorage.getItem("todo-data")) || {
+        lists: [],
+      };
+      const listIndex = currentData.lists.findIndex(
+        (list) => list.id === listId
+      );
       if (listIndex === -1) {
-        console.log('List not found.')
-        return
+        console.log("List not found.");
+        return;
       }
-      dispatch('generateId').then(taskId => {
-        dispatch('getCurrentDateTime').then(currentDateTime => {
+      dispatch("generateId").then((taskId) => {
+        dispatch("getCurrentDateTime").then((currentDateTime) => {
           const taskToCreate = {
             createdAt: currentDateTime,
             id: taskId,
             title: taskTitle,
-            subTitle: '',
-            description: '',
-            priority: '',
+            subTitle: "",
+            description: "",
+            priority: "",
             completed: false,
-            subTasks: []
-          }
-          currentData.lists[listIndex].tasks.push(taskToCreate)
-          localStorage.setItem('todo-data', JSON.stringify(currentData))
-          commit('updateTodoData', currentData)
-        })
-      })
+            subTasks: [],
+          };
+          currentData.lists[listIndex].tasks.push(taskToCreate);
+          localStorage.setItem("todo-data", JSON.stringify(currentData));
+          commit("updateTodoData", currentData);
+        });
+      });
     },
     updateTask({ commit }, { taskId, listId, newTask }) {
-      let currentData = JSON.parse(localStorage.getItem('todo-data')) || { lists: [] };
-      const listIndex = currentData.lists.findIndex(list => list.id === listId);
+      let currentData = JSON.parse(localStorage.getItem("todo-data")) || {
+        lists: [],
+      };
+      const listIndex = currentData.lists.findIndex(
+        (list) => list.id === listId
+      );
       if (listIndex === -1) {
-        console.error('List not found.');
+        console.error("List not found.");
         return;
       }
-      const taskIndex = currentData.lists[listIndex].tasks.findIndex(task => task.id === taskId);
+      const taskIndex = currentData.lists[listIndex].tasks.findIndex(
+        (task) => task.id === taskId
+      );
       if (taskIndex === -1) {
-        console.error('Task not found.')
+        console.error("Task not found.");
         return;
       }
+      currentData.lists[listIndex].tasks[taskIndex] = newTask;
+      localStorage.setItem("todo-data", JSON.stringify(currentData));
+      commit("updateTodoData", currentData);
+    },
 
-      currentData.lists[listIndex].tasks[taskIndex] = newTask
-      localStorage.setItem('todo-data', JSON.stringify(currentData))
-      commit('updateTodoData', currentData)
-    },
-    
-    deleteTask({ commit, dispatch}, { listId, taskId }) {
-      let currentData = JSON.parse(localStorage.getItem('todo-data')) || { lists: [] }
-      const listIndex = currentData.lists.findIndex(list => list.id === listId)
+    deleteTask({ commit, dispatch }, { listId, taskId }) {
+      let currentData = JSON.parse(localStorage.getItem("todo-data")) || {
+        lists: [],
+      };
+      const listIndex = currentData.lists.findIndex(
+        (list) => list.id === listId
+      );
       if (listIndex === -1) {
-        console.error('List not found.');
-        return
+        console.error("List not found.");
+        return;
       }
-      const taskIndex = currentData.lists[listIndex].tasks.findIndex(task => task.id === taskId)
+      const taskIndex = currentData.lists[listIndex].tasks.findIndex(
+        (task) => task.id === taskId
+      );
       if (taskIndex === -1) {
-        console.error('Task not found.')
-        return
+        console.error("Task not found.");
+        return;
       }
-      const isConfirmed = window.confirm('This action will remove the task permanently. Are you sure you want to delete this task?')
+      const isConfirmed = window.confirm(
+        "This action will remove the task permanently. Are you sure you want to delete this task?"
+      );
       if (!isConfirmed) {
-        return
+        return;
       }
-      currentData.lists[listIndex].tasks.splice(taskIndex, 1)
-      localStorage.setItem('todo-data', JSON.stringify(currentData))
-      commit('updateTodoData', currentData)
+      currentData.lists[listIndex].tasks.splice(taskIndex, 1);
+      localStorage.setItem("todo-data", JSON.stringify(currentData));
+      commit("updateTodoData", currentData);
     },
-    
+
     // creates a new list with an empty array of tasks and an auto generated id.
-    createList({ commit, dispatch }, { listTitle }){
-      let currentData = JSON.parse(localStorage.getItem('todo-data')) || { lists: [] }
-      const id = dispatch('generateId')
-      dispatch('generateId').then(listId => {
+    createList({ commit, dispatch }, { listTitle }) {
+      let currentData = JSON.parse(localStorage.getItem("todo-data")) || {
+        lists: [],
+      };
+      const id = dispatch("generateId");
+      dispatch("generateId").then((listId) => {
         const listToCreate = {
           id: listId,
           title: listTitle,
-          tasks: []
-        }
-        currentData.lists.push(listToCreate)
-        localStorage.setItem('todo-data', JSON.stringify(currentData))
-        commit('updateTodoData', currentData)
-      })
+          tasks: [],
+        };
+        currentData.lists.push(listToCreate);
+        localStorage.setItem("todo-data", JSON.stringify(currentData));
+        commit("updateTodoData", currentData);
+      });
     },
 
     // deletes a list based on its id, this action will also update the local storage and run the mutation to update the state
-    deleteList({ commit }, { listId }){
-      let currentData = JSON.parse(localStorage.getItem('todo-data')) || { lists: [] }
-      const listIndex = currentData.lists.findIndex(list => list.id === listId)
+    deleteList({ commit }, { listId }) {
+      let currentData = JSON.parse(localStorage.getItem("todo-data")) || {
+        lists: [],
+      };
+      const listIndex = currentData.lists.findIndex(
+        (list) => list.id === listId
+      );
       if (listIndex === -1) {
-        console.error('List not found.');
-        return
+        console.error("List not found.");
+        return;
       }
-      const isConfirmed = window.confirm('This action will remove the list and all nested tasks permanently. Are you sure you want to delete this list?')
+      const isConfirmed = window.confirm(
+        "This action will remove the list and all nested tasks permanently. Are you sure you want to delete this list?"
+      );
       if (!isConfirmed) {
-        return
+        return;
       }
-      currentData.lists.splice(listIndex, 1)
-      localStorage.setItem('todo-data', JSON.stringify(currentData))
-      commit('updateTodoData', currentData)
-    }
-  }
-})
+      currentData.lists.splice(listIndex, 1);
+      localStorage.setItem("todo-data", JSON.stringify(currentData));
+      commit("updateTodoData", currentData);
+    },
+    deleteSubTask({ commit, state }, { taskId, subTaskId }) {
+      const task = state.todoData.lists
+        .flatMap((list) => list.tasks)
+        .find((task) => task.id === taskId);
+      if (!task) {
+        console.error("Task not found.");
+        return;
+      }
+      const subTaskIndex = task.subTasks.findIndex(
+        (subTask) => subTask.id === subTaskId
+      );
+      if (subTaskIndex === -1) {
+        console.error("Subtask not found.");
+        return;
+      }
+      const isConfirmed = window.confirm(
+        "This action will remove the subtask permanently. Are you sure you want to delete this subtask?"
+      );
+      if (!isConfirmed) {
+        return;
+      }
+
+      task.subTasks.splice(subTaskIndex, 1);
+      commit("updateTodoData", state.todoData);
+      localStorage.setItem("todo-data", JSON.stringify(state.todoData));
+    },
+  },
+  getters: {
+    getTaskById: (state) => (taskId) => {
+      for (const list of state.todoData.lists) {
+        const task = list.tasks.find((task) => task.id === taskId);
+        if (task) {
+          return task;
+        }
+      }
+      return null;
+    },
+    getListById: (state) => (listId) => {
+      return state.todoData.lists.find((list) => list.id === listId);
+    },
+  },
+});

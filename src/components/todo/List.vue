@@ -9,11 +9,21 @@
         <div class="delete-list" @click="deleteList">X</div>
       </div>
       <div class="task-wrapper" v-if="taskCount > 0">
-        <Task v-for="task in list.tasks" :key="task.id" :task="task" :list="list" @click="showTaskOverview(task, list)" />
+        <Task
+          v-for="task in list.tasks"
+          :key="task.id"
+          :task="task"
+          :list="list"
+          @click="showTaskOverview(task, list, false)"
+        />
       </div>
       <div class="add-task-container">
         <form @submit="addNewTask">
-          <input v-model="taskTitle" type="text" placeholder="Enter title for this task...">
+          <input
+            v-model="taskTitle"
+            type="text"
+            placeholder="Enter title for this task..."
+          />
           <button>Add task</button>
         </form>
       </div>
@@ -22,80 +32,84 @@
 </template>
 
 <script>
-import Task from './Task.vue'
-import TaskOverview from './TaskOverview.vue'
+import Task from "./Task.vue";
+import TaskOverview from "./TaskOverview.vue";
 
 export default {
   components: {
     Task,
-    TaskOverview
+    TaskOverview,
   },
   props: {
-    list: Object
+    list: Object,
   },
   data() {
     return {
       showNewTaskForm: false,
-      taskTitle: '',
-      selectedTask: null
-    }
+      taskTitle: "",
+      selectedTask: null,
+    };
   },
   computed: {
     taskCount() {
       return this.list.tasks.length;
-    }
+    },
   },
   methods: {
     addNewTask(e) {
-      e.preventDefault()
-      if(this.taskTitle === '') return
-      this.$store.dispatch('createTask', { taskTitle: this.taskTitle, listId: this.list.id })
-      this.taskTitle = ''
+      e.preventDefault();
+      if (this.taskCount >= 20) return;
+      if (this.taskTitle === "") return;
+      this.$store.dispatch("createTask", {
+        taskTitle: this.taskTitle,
+        listId: this.list.id,
+      });
+      this.taskTitle = "";
     },
     deleteList() {
-      this.$store.dispatch('deleteList', { listId: this.list.id })
+      this.$store.dispatch("deleteList", { listId: this.list.id });
     },
     showTaskOverview(task, list) {
-      this.$emit('task-clicked', task, list);
-    }
-  }
-}
+      this.$emit("task-clicked", task, list);
+    },
+  },
+};
 </script>
 
 <style>
-.list-container{
+.list-container {
   width: 250px;
-  margin-left: .75em;
+  margin-left: 0.75em;
   flex: 0 0 auto;
 }
-.list-content{
+.list-content {
   width: 100%;
   background-color: #222;
   border-radius: 10px;
-  padding: .5em;
+  padding: 0.5em;
   color: #fefefe;
 }
-.list-content:first-child{
+.list-content:first-child {
   margin: 0;
 }
-.list-header{
+.list-header {
   position: relative;
-  margin-bottom: .5em;
+  margin-bottom: 0.5em;
 }
-.list-title{
+.list-title {
   font-weight: 100;
   font-size: 16px;
   max-width: 80%;
 }
-.task-count{
+.task-count {
   font-size: 12px;
 }
-.task-wrapper{
+.task-wrapper {
   display: flex;
   flex-direction: column;
   margin-bottom: 0.5em;
 }
-.add-task-container input{
+.add-task-container input {
   padding: 0.5em;
   font-size: 14px;
   border-radius: 5px 0px 0px 5px;
@@ -103,7 +117,7 @@ export default {
   width: 70%;
   background-color: #fefefe;
 }
-.add-task-container button{
+.add-task-container button {
   padding: 0.5em;
   font-size: 14px;
   border-radius: 0px 5px 5px 0px;
@@ -114,7 +128,7 @@ export default {
   background-color: #444;
   color: #fefefe;
 }
-.delete-list{
+.delete-list {
   position: absolute;
   width: 20px;
   height: 20px;
